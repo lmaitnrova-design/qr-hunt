@@ -1,21 +1,7 @@
-<!doctype html>
-<html lang="cs">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>QR Hunt – Admin</title>
-<style>
-body{font-family:system-ui,sans-serif;background:#f5f7f2;color:#17342b;margin:0}.wrap{max-width:900px;margin:auto;padding:28px 18px}table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden}th,td{padding:12px;border-bottom:1px solid #e4eae5;text-align:left}h1{font-size:30px}.muted{color:#66766e}
-</style></head>
-<body><div class="wrap"><h1>QR Hunt – přehled</h1>
-<p class="muted">Tahle stránka je určená jen pro organizátora. Než ji zveřejníš, zabezpeč ji autentizací.</p>
-<table><thead><tr><th>Hráč</th><th>Nalezeno</th><th>QR</th></tr></thead><tbody id="rows"></tbody></table>
-<script>
-const SUPABASE_URL="https://qmmidefgdflbgbihhdah.supabase.co";
-const SUPABASE_ANON_KEY="sb_publishable_4OOU5jtcv3niED36n8j3ag_kB8b4t6Y";
+<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EKO Festival 2026 – Admin</title><style>
+:root{font-family:Inter,system-ui,sans-serif;color:#17382d;background:#f4f2e8}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1000px;margin:auto;padding:34px 18px}.head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:24px}.badge{display:inline-block;background:#e7f0e5;color:#285c46;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}h1{font-size:34px;margin:12px 0 5px}.muted{color:#66766e}.card{background:#fff;border:1px solid #dce5dc;border-radius:22px;overflow:hidden;box-shadow:0 12px 35px rgba(23,56,45,.08)}table{width:100%;border-collapse:collapse}th,td{padding:14px 16px;border-bottom:1px solid #e4eae5;text-align:left}th{background:#f1f5ef;font-size:13px;text-transform:uppercase;letter-spacing:.05em}tr:last-child td{border-bottom:0}.count{font-weight:800}.empty{padding:30px;color:#66766e}.foot{font-size:12px;color:#87928c;margin-top:14px}
+</style></head><body><div class="wrap"><div class="head"><div><div class="badge">EKO Festival 2026</div><h1>🌿 QR Hunt – přehled</h1><div class="muted">Kontrola nalezených QR kódů v reálném čase.</div></div></div><div class="card"><table><thead><tr><th>Hráč</th><th>Nalezeno</th><th>Stanoviště</th></tr></thead><tbody id="rows"><tr><td colspan="3" class="empty">Načítám výsledky…</td></tr></tbody></table></div><div class="foot">Organizační přehled · 10 stanovišť · 1 bod za každý QR</div></div><script>
+const SUPABASE_URL="https://qmmidefgdflbgbihhdah.supabase.co",SUPABASE_ANON_KEY="sb_publishable_4OOU5jtcv3niED36n8j3ag_kB8b4t6Y";
 async function api(path){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY}});if(!r.ok)throw Error(await r.text());return r.json();}
-async function run(){
- const scans=await api("scans?select=player,qr_id&order=player");
- const m={}; scans.forEach(x=>{m[x.player]??=new Set();m[x.player].add(x.qr_id)});
- document.getElementById("rows").innerHTML=Object.entries(m).sort((a,b)=>b[1].size-a[1].size).map(([p,s])=>`<tr><td>${p.replace(/[&<>]/g,"")}</td><td><strong>${s.size}/10</strong></td><td>${[...s].sort((a,b)=>a-b).join(", ")}</td></tr>`).join("");
-}
-run();
-</script></div></body></html>
+async function run(){try{const scans=await api("scans?select=player,qr_id&order=player");const m={};scans.forEach(x=>{m[x.player]??=new Set();m[x.player].add(x.qr_id)});const rows=Object.entries(m).sort((a,b)=>b[1].size-a[1].size||a[0].localeCompare(b[0])).map(([p,s])=>`<tr><td>${String(p).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</td><td class="count">${s.size}/10</td><td>${[...s].sort((a,b)=>a-b).join(", ")}</td></tr>`).join("");document.getElementById("rows").innerHTML=rows||'<tr><td colspan="3" class="empty">Zatím nikdo QR kód nenaskenoval.</td></tr>';}catch(e){document.getElementById("rows").innerHTML='<tr><td colspan="3" class="empty">Výsledky se nepodařilo načíst.</td></tr>';}}run();
+</script></body></html>

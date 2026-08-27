@@ -3,109 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>QR Hunt</title>
+<title>EKO Festival 2026 – QR Hunt</title>
 <style>
-:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17342b;background:#f5f7f2}
-*{box-sizing:border-box}body{margin:0}.wrap{max-width:520px;margin:auto;padding:28px 18px}
-.card{background:white;border:1px solid #dfe7df;border-radius:24px;padding:28px;box-shadow:0 10px 35px rgba(0,0,0,.06)}
-h1{margin:0 0 8px;font-size:32px}p{line-height:1.55;color:#5d6d65}
-input,button{width:100%;min-height:48px;border-radius:14px;font-size:16px}
-input{border:1px solid #cbd7cf;padding:12px 14px;margin:12px 0}
-button{border:0;background:#17342b;color:white;font-weight:700;cursor:pointer}
-.status{margin-top:18px;padding:14px;border-radius:14px;background:#eef4ee}
-.small{font-size:13px;color:#718078}
-.hidden{display:none}
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17382d;background:#f4f2e8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#fffdf5 0,#f4f2e8 55%,#e9eee5 100%)}
+.wrap{max-width:560px;margin:auto;padding:28px 18px 42px}.card{background:rgba(255,255,255,.96);border:1px solid #dce5dc;border-radius:28px;padding:30px 26px;box-shadow:0 16px 50px rgba(23,56,45,.10)}
+.badge{display:inline-flex;align-items:center;gap:7px;background:#e7f0e5;color:#285c46;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+h1{margin:16px 0 10px;font-size:34px;line-height:1.08;letter-spacing:-.03em}h1 span{color:#4c8063}p{line-height:1.55;color:#5e6f66;margin:10px 0}
+input,button{width:100%;min-height:52px;border-radius:15px;font-size:16px}input{border:1px solid #cbd8cf;padding:13px 15px;margin:16px 0 10px;background:#fbfcf9;outline:none}input:focus{border-color:#4c8063;box-shadow:0 0 0 3px #e7f0e5}
+button{border:0;background:#17382d;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 7px 18px rgba(23,56,45,.16)}button:hover{filter:brightness(1.05)}
+.status{margin:20px 0 14px;padding:17px;border-radius:17px;background:#edf4ed;border:1px solid #dce8dc;color:#234d3b}.score{font-size:22px}.small{font-size:13px;color:#77857e}.success{font-size:18px;font-weight:800}.leaf{font-size:42px;line-height:1}
+.progress{height:10px;background:#e3e9e3;border-radius:99px;overflow:hidden;margin:14px 0 6px}.progress>div{height:100%;width:0;background:#4c8063;border-radius:99px;transition:width .3s ease}
+.footer{margin-top:18px;text-align:center;font-size:12px;color:#89958f}.change{background:#687970;box-shadow:none;margin-top:10px}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="card">
-    <div id="app"></div>
-  </div>
-</div>
+<body><div class="wrap"><div class="card"><div id="app"></div></div><div class="footer">EKO Festival 2026 · QR Hunt 🌿</div></div>
 <script>
-/*
-  QR HUNT FRONTEND
-  - This page expects a Supabase project.
-  - Configure SUPABASE_URL and SUPABASE_ANON_KEY below.
-  - QR links use ?qr=1 ... ?qr=10.
-*/
-const SUPABASE_URL = "https://qmmidefgdflbgbihhdah.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_4OOU5jtcv3niED36n8j3ag_kB8b4t6Y";
-const app = document.getElementById("app");
-
+const SUPABASE_URL="https://qmmidefgdflbgbihhdah.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_4OOU5jtcv3niED36n8j3ag_kB8b4t6Y";
+const TOTAL=10, POINTS=1, app=document.getElementById("app");
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function getPlayer(){return localStorage.getItem("qrhunt_player");}
-function setPlayer(v){localStorage.setItem("qrhunt_player",v);}
-
-async function api(path, options={}){
-  const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
-    ...options,
-    headers:{
-      "apikey":SUPABASE_ANON_KEY,
-      "Authorization":"Bearer "+SUPABASE_ANON_KEY,
-      "Content-Type":"application/json",
-      "Prefer":"return=representation",
-      ...(options.headers||{})
-    }
-  });
-  if(!r.ok) throw new Error(await r.text());
-  return r.status===204?null:r.json();
-}
-
+function getPlayer(){return localStorage.getItem("qrhunt_player");} function setPlayer(v){localStorage.setItem("qrhunt_player",v);}
+async function api(path,options={}){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{...options,headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json",Prefer:"return=representation",...(options.headers||{})}});if(!r.ok)throw new Error(await r.text());return r.status===204?null:r.json();}
+function scoreBox(n){return `<div class="status"><div class="score"><strong>${n} / ${TOTAL}</strong> QR kódů</div><div class="progress"><div style="width:${n/TOTAL*100}%"></div></div><div class="small">⭐ ${n*POINTS} bodů</div></div>`;}
 async function render(){
-  const qr = Number(new URLSearchParams(location.search).get("qr")||0);
-  let player = getPlayer();
-
-  if(!player){
-    app.innerHTML = `
-      <h1>🌿 QR Hunt</h1>
-      <p>Najdi ukryté QR kódy a nasbírej jich co nejvíc. Zadej přezdívku a můžeš vyrazit!</p>
-      <input id="name" maxlength="40" placeholder="Tvoje přezdívka">
-      <button id="start">Začít lov</button>
-      <p class="small">Přezdívka se používá jen k evidenci nalezených QR.</p>`;
-    document.getElementById("start").onclick=()=>{
-      const n=document.getElementById("name").value.trim();
-      if(n.length<2)return alert("Zadej prosím alespoň 2 znaky.");
-      setPlayer(n); render();
-    };
-    return;
-  }
-
-  if(!qr){
-    try{
-      const rows=await api("scans?player=eq."+encodeURIComponent(player)+"&select=qr_id");
-      const found=new Set(rows.map(x=>x.qr_id));
-      app.innerHTML=`
-        <h1>🌿 QR Hunt</h1>
-        <p>Ahoj, <strong>${esc(player)}</strong>!</p>
-        <div class="status"><strong>Nalezeno ${found.size} / 10 QR kódů</strong></div>
-        <p class="small">Teď už jen hledej další QR kódy. Po naskenování se nález automaticky zapíše.</p>
-        <button id="reset" style="background:#64746d">Změnit přezdívku</button>`;
-      document.getElementById("reset").onclick=()=>{localStorage.removeItem("qrhunt_player");render();};
-    }catch(e){
-      app.innerHTML="<h1>QR Hunt</h1><p>Web ještě není propojený s databází. Organizátor musí doplnit nastavení Supabase.</p>";
-    }
-    return;
-  }
-
-  if(qr<1||qr>10){app.innerHTML="<h1>Neplatný QR kód</h1>";return;}
-
-  try{
-    const existing=await api("scans?player=eq."+encodeURIComponent(player)+"&qr_id=eq."+qr+"&select=id");
-    if(existing.length){
-      app.innerHTML=`<h1>✓ Už nalezeno</h1><p>QR kód č. ${qr} už máš započítaný.</p><div class="status">Hledej další! 🌱</div>`;
-      return;
-    }
-    await api("scans",{method:"POST",body:JSON.stringify({player,qr_id:qr})});
-    const all=await api("scans?player=eq."+encodeURIComponent(player)+"&select=qr_id");
-    const unique=new Set(all.map(x=>x.qr_id)).size;
-    app.innerHTML=`<h1>🎉 QR nalezen!</h1><p>Stanoviště <strong>${qr}</strong> se započítalo.</p><div class="status"><strong>${unique} / 10</strong> nalezeno</div><p>Teď můžeš hledat další.</p><button onclick="location.href='/'">Moje skóre</button>`;
-  }catch(e){
-    app.innerHTML="<h1>Něco se pokazilo</h1><p>QR se nepodařilo zapsat. Zkus stránku načíst znovu.</p>";
-  }
-}
+ const qr=Number(new URLSearchParams(location.search).get("qr")||0),player=getPlayer();
+ if(!player){app.innerHTML=`<div class="leaf">🌿</div><div class="badge">EKO Festival 2026</div><h1>EKO <span>QR Hunt</span></h1><p>Najdi všech <strong>${TOTAL} ukrytých QR kódů</strong> po festivalu. Každý nález se počítá a každý QR můžeš získat jen jednou.</p><input id="name" maxlength="40" placeholder="Tvoje přezdívka nebo jméno"><button id="start">Začít lov 🌱</button><p class="small">Bez aplikace. Stačí telefon a fotoaparát.</p>`;document.getElementById("start").onclick=()=>{const n=document.getElementById("name").value.trim();if(n.length<2)return alert("Zadej prosím alespoň 2 znaky.");setPlayer(n);render();};return;}
+ if(!qr){try{const rows=await api("scans?player=eq."+encodeURIComponent(player)+"&select=qr_id");const found=new Set(rows.map(x=>x.qr_id));app.innerHTML=`<div class="badge">EKO Festival 2026</div><h1>Tvůj <span>QR Hunt</span></h1><p>Ahoj, <strong>${esc(player)}</strong>! 👋</p>${scoreBox(found.size)}<p>${found.size===TOTAL?"🎉 Máš kompletní lov! Teď už jen ukaž svůj výsledek u stánku.":"Hledání pokračuje! Rozhlédni se po festivalu a najdi další QR kódy."}</p><button class="change" id="reset">Změnit přezdívku</button>`;document.getElementById("reset").onclick=()=>{localStorage.removeItem("qrhunt_player");render();};}catch(e){app.innerHTML=`<div class="leaf">🌿</div><h1>Chvilku strpení</h1><p>Výsledky se právě nepodařilo načíst. Zkus stránku obnovit.</p>`;}return;}
+ if(qr<1||qr>TOTAL){app.innerHTML=`<div class="leaf">🌱</div><h1>Neplatné stanoviště</h1><p>Tento QR kód není součástí EKO QR Huntu.</p>`;return;}
+ try{const existing=await api("scans?player=eq."+encodeURIComponent(player)+"&qr_id=eq."+qr+"&select=id");if(existing.length){const all=await api("scans?player=eq."+encodeURIComponent(player)+"&select=qr_id");const n=new Set(all.map(x=>x.qr_id)).size;app.innerHTML=`<div class="leaf">✓</div><div class="badge">Stanoviště ${qr}</div><h1>Už <span>nalezeno</span></h1><p>Tento QR kód už máš započítaný. Hledej další!</p>${scoreBox(n)}<button onclick="location.href='./'">Zpět na skóre</button>`;return;}
+ await api("scans",{method:"POST",body:JSON.stringify({player,qr_id:qr})});const all=await api("scans?player=eq."+encodeURIComponent(player)+"&select=qr_id");const n=new Set(all.map(x=>x.qr_id)).size;app.innerHTML=n===TOTAL?`<div class="leaf">🏆</div><div class="badge">EKO Festival 2026</div><h1>Máte <span>všechny!</span></h1><p class="success">Gratulujeme, ${esc(player)}! 🎉</p>${scoreBox(n)}<p>Našel/a jsi všech 10 QR kódů. Ukaž tento výsledek u stánku a vyzvedni si odměnu.</p>`:`<div class="leaf">🎉</div><div class="badge">Stanoviště ${qr}</div><h1>QR <span>nalezen!</span></h1><p>Skvělé! Stanoviště <strong>${qr}</strong> máš za sebou.</p>${scoreBox(n)}<p>Teď hledej další ukrytý QR kód. 🌱</p><button onclick="location.href='./'">Moje skóre</button>`;}catch(e){app.innerHTML=`<div class="leaf">⚠️</div><h1>Něco se pokazilo</h1><p>QR se nepodařilo započítat. Zkus stránku načíst znovu.</p>`;}}
 render();
-</script>
-</body>
-</html>
+</script></body></html>
