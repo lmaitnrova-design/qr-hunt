@@ -1,0 +1,36 @@
+name: Fix wrong QR answers
+on:
+  push:
+    branches: [main]
+jobs:
+  fix:
+    if: github.actor == 'lmaitnrova-design'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch answer saving
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          new='''document.getElementById("submit").onclick=async()=>{const sel=document.querySelector('input[name="answer"]:checked');if(!sel)return alert("Vyber prosím odpověď.");const answer=Number(sel.value),correct=answer===item.a,btn=document.getElementById("submit");btn.disabled=true;attempted.add(qr);saveAttempted(attempted);if(correct){try{await api("scans",{method:"POST",body:JSON.stringify({player,qr_id:qr})})}catch(e){attempted.delete(qr);saveAttempted(attempted);btn.disabled=false;document.getElementById("feedback").innerHTML=`<div class="feedback wrong"><strong>Odpověď se nepodařila uložit.</strong><div class="fact">Zkus to prosím ještě jednou.</div></div>`;return}}document.getElementById("feedback").innerHTML=`<div class="feedback ${correct?'correct':'wrong'}"><strong>${correct?'🎉 Správně! +1 bod':'❌ Tentokrát ne. 0 bodů'}</strong><div class="fact"><strong>💡 Zajímavost:</strong> ${esc(item.f)}</div><button onclick="location.href='./'">Pokračovat na skóre</button></div>`}'''
+          pattern=r'document\.getElementById\("submit"\)\.onclick=async\(\)=>\{.*?\};\}catch\(e\)'
+          ns,n=re.subn(pattern,new+';}catch(e)',s,count=1)
+          if n!=1:
+              raise SystemExit(f'Answer handler not found; replacements={n}')
+          p.write_text(ns,encoding='utf-8')
+          PY
+      - name: Commit and remove helper
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Fix wrong answer saving' || exit 0
+          git push
+          git rm .github/workflows/fix-wrong-answer.yml
+          git commit -m 'Remove temporary fix workflow'
+          git push
