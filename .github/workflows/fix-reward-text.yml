@@ -1,0 +1,34 @@
+name: Fix reward text
+on:
+  push:
+    branches: [main]
+jobs:
+  update:
+    if: github.actor == 'lmaitnrova-design'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update reward wording
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='Potom si na stánku <strong>Adoptuj rostlinu</strong> zatoč kolem štěstí a získej odměnu! 🎡🌱<br><strong>Každý den od 10:00 do 14:00.</strong>'
+          new='Potom si na stánku <strong>Adoptuj rostlinu</strong> zatoč kolem štěstí a podle toho, co si vytočíš, získáš odměnu! 🎡🌱<br><strong>Každý den od 10:00 do 14:00.</strong>'
+          if old not in s:
+              raise SystemExit('Expected text not found')
+          p.write_text(s.replace(old,new), encoding='utf-8')
+          PY
+      - name: Commit and remove helper workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Clarify prize wheel wording'
+          git push
+          git rm .github/workflows/fix-reward-text.yml
+          git commit -m 'Remove temporary workflow'
+          git push
