@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Hunt</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17342b;background:#f5f7f2}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:520px;margin:auto;padding:28px 18px}
+.card{background:white;border:1px solid #dfe7df;border-radius:24px;padding:28px;box-shadow:0 10px 35px rgba(0,0,0,.06)}
+h1{margin:0 0 8px;font-size:32px}p{line-height:1.55;color:#5d6d65}
+input,button{width:100%;min-height:48px;border-radius:14px;font-size:16px}
+input{border:1px solid #cbd7cf;padding:12px 14px;margin:12px 0}
+button{border:0;background:#17342b;color:white;font-weight:700;cursor:pointer}
+.status{margin-top:18px;padding:14px;border-radius:14px;background:#eef4ee}
+.small{font-size:13px;color:#718078}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div id="app"></div>
+  </div>
+</div>
+<script>
+/*
+  QR HUNT FRONTEND
+  - This page expects a Supabase project.
+  - Configure SUPABASE_URL and SUPABASE_ANON_KEY below.
+  - QR links use ?qr=1 ... ?qr=10.
+*/
+const SUPABASE_URL = "https://qmmidefgdflbgbihhdah.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_4OOU5jtcv3niED36n8j3ag_kB8b4t6Y";
+const app = document.getElementById("app");
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function getPlayer(){return localStorage.getItem("qrhunt_player");}
+function setPlayer(v){localStorage.setItem("qrhunt_player",v);}
+
+async function api(path, options={}){
+  const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
+    ...options,
+    headers:{
+      "apikey":SUPABASE_ANON_KEY,
+      "Authorization":"Bearer "+SUPABASE_ANON_KEY,
+      "Content-Type":"application/json",
+      "Prefer":"return=representation",
+      ...(options.headers||{})
+    }
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return r.status===204?null:r.json();
+}
+
+async function render(){
+  const qr = Number(new URLSearchParams(location.search).get("qr")||0);
+  let player = getPlayer();
+
+  if(!player){
+    app.innerHTML = `
+      <h1>🌿 QR Hunt</h1>
+      <p>Najdi ukryté QR kódy a nasbírej jich co nejvíc. Zadej přezdívku a můžeš vyrazit!</p>
+      <input id="name" maxlength="40" placeholder="Tvoje přezdívka">
+      <button id="start">Začít lov</button>
+      <p class="small">Přezdívka se používá jen k evidenci nalezených QR.</p>`;
+    document.getElementById("start").onclick=()=>{
+      const n=document.getElementById("name").value.trim();
+      if(n.length<2)return alert("Zadej prosím alespoň 2 znaky.");
+      setPlayer(n); render();
+    };
+    return;
+  }
+
+  if(!qr){
+    try{
+      const rows=await api("scans?player=eq."+encodeURIComponent(player)+"&select=qr_id");
+      const found=new Set(rows.map(x=>x.qr_id));
+      app.innerHTML=`
+        <h1>🌿 QR Hunt</h1>
+        <p>Ahoj, <strong>${esc(player)}</strong>!</p>
+        <div class="status"><strong>Nalezeno ${found.size} / 10 QR kódů</strong></div>
+        <p class="small">Teď už jen hledej další QR kódy. Po naskenování se nález automaticky zapíše.</p>
+        <button id="reset" style="background:#64746d">Změnit přezdívku</button>`;
+      document.getElementById("reset").onclick=()=>{localStorage.removeItem("qrhunt_player");render();};
+    }catch(e){
+      app.innerHTML="<h1>QR Hunt</h1><p>Web ještě není propojený s databází. Organizátor musí doplnit nastavení Supabase.</p>";
+    }
+    return;
+  }
+
+  if(qr<1||qr>10){app.innerHTML="<h1>Neplatný QR kód</h1>";return;}
+
+  try{
+    const existing=await api("scans?player=eq."+encodeURIComponent(player)+"&qr_id=eq."+qr+"&select=id");
+    if(existing.length){
+      app.innerHTML=`<h1>✓ Už nalezeno</h1><p>QR kód č. ${qr} už máš započítaný.</p><div class="status">Hledej další! 🌱</div>`;
+      return;
+    }
+    await api("scans",{method:"POST",body:JSON.stringify({player,qr_id:qr})});
+    const all=await api("scans?player=eq."+encodeURIComponent(player)+"&select=qr_id");
+    const unique=new Set(all.map(x=>x.qr_id)).size;
+    app.innerHTML=`<h1>🎉 QR nalezen!</h1><p>Stanoviště <strong>${qr}</strong> se započítalo.</p><div class="status"><strong>${unique} / 10</strong> nalezeno</div><p>Teď můžeš hledat další.</p><button onclick="location.href='/'">Moje skóre</button>`;
+  }catch(e){
+    app.innerHTML="<h1>Něco se pokazilo</h1><p>QR se nepodařilo zapsat. Zkus stránku načíst znovu.</p>";
+  }
+}
+render();
+</script>
+</body>
+</html>

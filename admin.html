@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="cs">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Hunt – Admin</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#f5f7f2;color:#17342b;margin:0}.wrap{max-width:900px;margin:auto;padding:28px 18px}table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden}th,td{padding:12px;border-bottom:1px solid #e4eae5;text-align:left}h1{font-size:30px}.muted{color:#66766e}
+</style></head>
+<body><div class="wrap"><h1>QR Hunt – přehled</h1>
+<p class="muted">Tahle stránka je určená jen pro organizátora. Než ji zveřejníš, zabezpeč ji autentizací.</p>
+<table><thead><tr><th>Hráč</th><th>Nalezeno</th><th>QR</th></tr></thead><tbody id="rows"></tbody></table>
+<script>
+const SUPABASE_URL="https://qmmidefgdflbgbihhdah.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_4OOU5jtcv3niED36n8j3ag_kB8b4t6Y";
+async function api(path){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY}});if(!r.ok)throw Error(await r.text());return r.json();}
+async function run(){
+ const scans=await api("scans?select=player,qr_id&order=player");
+ const m={}; scans.forEach(x=>{m[x.player]??=new Set();m[x.player].add(x.qr_id)});
+ document.getElementById("rows").innerHTML=Object.entries(m).sort((a,b)=>b[1].size-a[1].size).map(([p,s])=>`<tr><td>${p.replace(/[&<>]/g,"")}</td><td><strong>${s.size}/10</strong></td><td>${[...s].sort((a,b)=>a-b).join(", ")}</td></tr>`).join("");
+}
+run();
+</script></div></body></html>
