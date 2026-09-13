@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fotbalový kvíz Maty Káma</title>
 <link rel="icon" href="https://www.fcviktoria.cz/download/loga/logo-fcvp-01.jpg">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=5">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -14,6 +14,6 @@
 <header class="topbar"><div class="topbar-inner"><img src="https://www.fcviktoria.cz/download/loga/logo-fcvp-01.jpg" alt="Viktoria Plzeň" class="logo"><div class="brand"><span>FC VIKTORIA PLZEŇ</span><strong>MATY KÁMA</strong></div><div class="top-mark">⚽</div></div></header>
 <main class="shell">
 <section id="start" class="card hero-card"><div class="hero-badge">VIKTORIA PLZEŇ • QR CHALLENGE</div><img src="https://www.fcviktoria.cz/download/loga/logo-fcvp-01.jpg" alt="Viktoria Plzeň" class="hero-logo"><h1>FOTBALOVÝ KVÍZ</h1><div class="hero-name">MATY <span>KÁMA</span></div><p class="lead">Otestuj své znalosti, poznej zákulisí a zjisti, jak dobře znáš Viktorku!</p><div class="start-box"><label for="nickname">Tvoje přezdívka</label><div class="start-row"><input id="nickname" maxlength="30" autocomplete="nickname" placeholder="např. Messi23"><button id="startBtn">ZAČÍT KVÍZ →</button></div><p class="small">Přezdívku použiješ jen jednou. Tento kvíz je určen pro jedno zařízení.</p><div id="startError" class="error"></div></div></section>
-<section id="question" class="card question-card hidden"><div class="question-top"><span id="questionNo">OTÁZKA 1</span><span id="status">0 / 10</span></div><div class="qr-hint">Naskenovaný QR kód otevřel tuto otázku.</div><h2 id="questionText"></h2><div id="options" class="options"></div><div id="questionMessage" class="message"></div></section>
+<section id="question" class="card question-card hidden"><div class="question-top"><span id="questionNo">OTÁZKA 1</span><span id="status">0 / 20</span></div><div class="qr-hint">Naskenovaný QR kód otevřel tuto otázku.</div><h2 id="questionText"></h2><div id="options" class="options"></div><div id="questionMessage" class="message"></div></section>
 <section id="done" class="card done-card hidden"><img src="https://www.fcviktoria.cz/download/loga/logo-fcvp-01.jpg" alt="Viktoria Plzeň" class="done-logo"><div class="done-icon">✓</div><p class="eyebrow">KONEC HRY</p><h2>Paráda, <span id="doneName"></span>!</h2><p>Všechny odpovědi jsou uložené. Výsledek už čeká v administraci.</p><button onclick="location.href=location.pathname">ZPĚT NA ZAČÁTEK</button></section>
-</main><footer>FC Viktoria Plzeň • Fotbalový kvíz Maty Káma</footer><script src="app.js"></script></body></html>
+</main><footer>FC Viktoria Plzeň • Fotbalový kvíz Maty Káma</footer><script src="app.js?v=5"></script></body></html>
